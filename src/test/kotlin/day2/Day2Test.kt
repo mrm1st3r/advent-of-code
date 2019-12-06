@@ -6,7 +6,7 @@ import org.junit.Test
 fun opcode(input: String): String {
     val ints = input.split(",").map {it.toInt()}
 
-    return intcodes(ints).joinToString(",") { it.toString() }
+    return intCodeComputer(ints).joinToString(",") { it.toString() }
 }
 
 class Day2Test {

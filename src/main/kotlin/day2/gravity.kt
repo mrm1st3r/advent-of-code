@@ -4,41 +4,48 @@ import java.io.File
 
 fun main() {
     val lines = File("src/main/resources/day2/input.txt").readLines()
-    val program: List<Int> = lines
+
+    val program: List<Int> = parseProgram(lines)
+        .setInputs(12, 2)
+    print(intCodeComputer(program)[0])
+}
+
+fun List<Int>.setInputs(noun: Int, verb: Int): List<Int> =
+    mapIndexed { i, v ->
+        when (i) {
+            1 -> noun
+            2 -> verb
+            else -> v
+        }
+    }
+
+fun parseProgram(lines: List<String>): List<Int> =
+    lines
         .filter(String::isNotEmpty)
         .flatMap { it.split(",") }
         .map { it.toInt() }
-        .mapIndexed { i, v ->
-            when (i) {
-                1 -> 12
-                2 -> 2
-                else -> v
-            }
-        }
-    print(intcodes(program)[0])
-}
 
-fun intcodes(input: List<Int>): List<Int> {
+fun intCodeComputer(memory: List<Int>): List<Int> {
     return try {
-        (0..input.size step 4)
-            .fold(input, ::exec)
+        (0..memory.size step 4)
+            .fold(memory, ::exec)
     } catch (e: HaltingException) {
         e.codes
     }
 }
 
-fun exec(codes: List<Int>, i: Int): List<Int> =
-    when (codes[i]) {
-        1 -> codes.execAt(i) { a, b -> a + b }
-        2 -> codes.execAt(i) { a, b -> a * b }
-        99 -> throw HaltingException(codes)
-        else -> throw IllegalStateException("Unknown opcode ${codes[i]}")
+private fun exec(memory: List<Int>, address: Int): List<Int> =
+    when (memory[address]) {
+        1 -> memory.execAt(address) { a, b -> a + b }
+        2 -> memory.execAt(address) { a, b -> a * b }
+        99 -> throw HaltingException(memory)
+        else -> throw IllegalStateException("Unknown opcode ${memory[address]}")
     }
 
-fun List<Int>.execAt(i: Int, op: ((Int, Int) -> Int)) =
+private fun List<Int>.execAt(i: Int, op: ((Int, Int) -> Int)) =
     replace(this[i+3], op(this[this[i+1]], this[this[i+2]]))
 
-fun <T> List<T>.replace(index: Int, updated: T) =
+private fun <T> List<T>.replace(index: Int, updated: T) =
     mapIndexed { i, current -> if (i == index) updated else current }
 
-data class HaltingException(val codes: List<Int>) : RuntimeException()
+private data class HaltingException(val codes: List<Int>) : RuntimeException()
